@@ -166,9 +166,10 @@
   }
 
   function doyATexto(doy) {
-    const meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+    const en = window.FC_LANG === "en";
+    const meses = en ? ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] : ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
     const d = new Date(Date.UTC(2001, 0, doy)); // 2001 no es bisiesto
-    return d.getUTCDate() + " " + meses[d.getUTCMonth()];
+    return en ? meses[d.getUTCMonth()] + " " + d.getUTCDate() : d.getUTCDate() + " " + meses[d.getUTCMonth()];
   }
 
   // Función de error (Abramowitz-Stegun 7.1.26)

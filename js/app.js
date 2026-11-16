@@ -26,8 +26,9 @@
     "https://cdn.jsdelivr.net/gh/nvkelso/natural-earth-vector@master/geojson/ne_110m_admin_0_countries.geojson",
   ];
   const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
-  const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  const MESES_LARGOS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const EN = window.FC_LANG === "en"; // idioma elegido (js/idioma.js)
+  const MESES = EN ? ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] : ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const MESES_LARGOS = EN ? ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] : ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 
   // Paletas (tema oscuro): secuencial naranja (magnitud) y divergente azul–gris–rojo (anomalía)
   const C = {
@@ -228,7 +229,7 @@
       style: () => ({ color: "#f0efec", weight: 0.6, opacity: 0.45, fillOpacity: 0.02, fillColor: "#000" }),
       onEachFeature: (f, capa) => {
         const p = f.properties;
-        const nombre = p.NAME_ES || p.NAME;
+        const nombre = (EN ? p.NAME : p.NAME_ES) || p.NAME;
         const iso = codigoPais(p);
         paisesPorNombre.set(nombre.toLowerCase(), { f, capa });
         if (iso) paisesPorNombre.set(iso.toLowerCase(), { f, capa });
@@ -242,7 +243,7 @@
         });
       },
     }).addTo(mapa);
-    const nombres = [...new Set(geo.features.map((f) => f.properties.NAME_ES || f.properties.NAME))].sort((a, b) => a.localeCompare(b, "es"));
+    const nombres = [...new Set(geo.features.map((f) => (EN ? f.properties.NAME : f.properties.NAME_ES) || f.properties.NAME))].sort((a, b) => a.localeCompare(b, "es"));
     lista.innerHTML = nombres.map((n) => `<option value="${n}"></option>`).join("");
     $("buscador").addEventListener("change", (e) => {
       const hit = paisesPorNombre.get(e.target.value.trim().toLowerCase());
@@ -256,7 +257,7 @@
     const iso = codigoPais(p);
     seleccionarArea({
       clave: iso,
-      nombre: p.NAME_ES || p.NAME,
+      nombre: (EN ? p.NAME : p.NAME_ES) || p.NAME,
       bbox: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()].map((x) => Math.round(x * 100) / 100),
       lat: p.LABEL_Y != null ? p.LABEL_Y : b.getCenter().lat,
       lon: p.LABEL_X != null ? p.LABEL_X : b.getCenter().lng,
@@ -264,7 +265,7 @@
       geo: L.geoJSON(f),
       feature: f,
     });
-    $("buscador").value = p.NAME_ES || p.NAME;
+    $("buscador").value = (EN ? p.NAME : p.NAME_ES) || p.NAME;
   }
 
   // ---------- Regiones de enfoque (Huánuco y Amazonía peruana) ----------
@@ -626,7 +627,7 @@
         range: String(y), orient: "vertical", left: 40, right: 12, top: 30, bottom: 6, cellSize: ["auto", "auto"],
         itemStyle: { color: "#151514", borderColor: C.superficie, borderWidth: 2 },
         splitLine: { lineStyle: { color: "#4a4a45", width: 1 } },
-        dayLabel: { firstDay: 1, nameMap: ["D", "L", "M", "M", "J", "V", "S"], color: C.texto2, fontSize: 10 },
+        dayLabel: { firstDay: 1, nameMap: EN ? ["S", "M", "T", "W", "T", "F", "S"] : ["D", "L", "M", "M", "J", "V", "S"], color: C.texto2, fontSize: 10 },
         monthLabel: { nameMap: MESES, color: C.texto2, fontSize: 11 },
         yearLabel: { show: false },
       },
@@ -936,7 +937,7 @@
     const z = (n) => String(n).padStart(2, "0");
     let desde, hasta, titulo;
     if (m && d) { desde = hasta = `${y}-${z(m)}-${z(d)}`; titulo = fechaLarga(desde); }
-    else if (m) { desde = `${y}-${z(m)}-01`; hasta = `${y}-${z(m)}-${z(S.diasEnMes(y, m - 1))}`; titulo = `${MESES_LARGOS[m - 1]} de ${y}`; }
+    else if (m) { desde = `${y}-${z(m)}-01`; hasta = `${y}-${z(m)}-${z(S.diasEnMes(y, m - 1))}`; titulo = EN ? `${MESES_LARGOS[m - 1]} ${y}` : `${MESES_LARGOS[m - 1]} de ${y}`; }
     else { desde = `${y}-01-01`; hasta = `${y}-12-31`; titulo = `año ${y}`; }
     if (hasta > ult) hasta = ult;
     if (desde > ult) return null;
@@ -1344,7 +1345,7 @@
   }
   function fechaLarga(iso) {
     const d = S.parseFecha(iso);
-    return `${d.getUTCDate()} de ${MESES_LARGOS[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
+    return EN ? `${MESES_LARGOS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}` : `${d.getUTCDate()} de ${MESES_LARGOS[d.getUTCMonth()]} de ${d.getUTCFullYear()}`;
   }
   const fmt2 = new Intl.NumberFormat("es-PE", { maximumFractionDigits: 2 });
 
@@ -1421,7 +1422,7 @@
       return `<rect x="${x0(i).toFixed(1)}" y="${H - 14 - alto}" width="${bw.toFixed(1)}" height="${alto}" rx="2" fill="#ec835a"><title>${fechaLarga(d.f)}: ${d.focos} focos</title></rect>`;
     }).join("");
     const linea = h.map((d, i) => `${(x0(i) + bw / 2).toFixed(1)},${(H - 14 - (d.acum / maxA) * (H - 24)).toFixed(1)}`).join(" ");
-    const et = (i) => { const d = S.parseFecha(h[i].f); return `${d.getUTCDate()} ${MESES[d.getUTCMonth()].toLowerCase()}`; };
+    const et = (i) => { const d = S.parseFecha(h[i].f); return EN ? `${MESES[d.getUTCMonth()]} ${d.getUTCDate()}` : `${d.getUTCDate()} ${MESES[d.getUTCMonth()].toLowerCase()}`; };
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Historial del incendio día a día">` + barras +
       `<polyline points="${linea}" fill="none" stroke="#7a3414" stroke-width="2"/>` +
       `<text x="5" y="${H - 2}" fill="#555" font-size="10">${et(0)}</text>` +
@@ -1433,7 +1434,7 @@
     const activo = S.indiceDeFecha(x.fin, hasta) <= 1;
     const p0 = x.primero;
     const filas = h.filter((d) => d.focos).slice(0, 6).map((d) =>
-      `<tr><td>${fechaLarga(d.f).replace(/ de \d{4}$/, "")}</td><td>${d.focos}</td><td>+${fmt.format(Math.round(d.nuevo * 100))} ha</td><td>${fmt.format(Math.round(d.acum * 100))} ha</td></tr>`).join("");
+      `<tr><td>${fechaLarga(d.f).replace(/(?: de|,) \d{4}$/, "")}</td><td>${d.focos}</td><td>+${fmt.format(Math.round(d.nuevo * 100))} ha</td><td>${fmt.format(Math.round(d.acum * 100))} ha</td></tr>`).join("");
     const mas = h.filter((d) => d.focos).length > 6 ? `<tr><td colspan="4" style="opacity:.7">… y ${h.filter((d) => d.focos).length - 6} días más</td></tr>` : "";
     return `<div class="popup-incendio"><h3>🔥 #${x.num} · ${x.lugar || ""}</h3>` +
       `<p>${activo ? "<b style=\"color:#d2381a\">● Activo</b> · " : ""}${fechaLarga(x.inicio)}, ${horaTexto(p0.f, p0.h).split(" (")[1].replace(" hora de Perú)", "")}` +
@@ -1770,6 +1771,12 @@
   }
   // Texto de lluvia sin porcentajes absurdos
   function textoLluvia(seca) {
+    if (EN) {
+      if (seca.dudoso) return `NASA POWER's most recent rain data are provisional and here they look unreasonable (${Math.round(seca.actual)} mm versus ${Math.round(seca.normal)} mm normal), so <b>they were not used</b> in the calculation`;
+      const p = Math.round((seca.razon - 1) * 100);
+      if (seca.razon >= 1.5) return `last month it rained about <b>${seca.razon.toFixed(1)} times</b> the normal amount (more moisture lowers the risk)`;
+      return `last month it rained ${Math.abs(p)} % ${p < 0 ? "<b>less</b>" : "more"} than normal${p < -20 ? " (dry vegetation burns more easily)" : p > 20 ? " (more moisture lowers the risk)" : ""}`;
+    }
     if (seca.dudoso) return `los datos de lluvia más recientes de NASA POWER son provisionales y aquí salen fuera de lo razonable (${Math.round(seca.actual)} mm frente a ${Math.round(seca.normal)} mm normales), así que <b>no se usaron</b> para el cálculo`;
     const pct = Math.round((seca.razon - 1) * 100);
     if (seca.razon >= 1.5) return `en el último mes llovió unas <b>${seca.razon.toFixed(1).replace(".", ",")} veces</b> lo normal (más humedad, baja el riesgo)`;
@@ -1873,7 +1880,7 @@
     } finally { calculandoRiesgo = false; $("btn-riesgo").disabled = false; }
   }
 
-  const rangoTxt = (a, b) => { const A = S.parseFecha(a), B = S.parseFecha(b); return `${A.getUTCDate()} de ${MESES_LARGOS[A.getUTCMonth()]} y el ${B.getUTCDate()} de ${MESES_LARGOS[B.getUTCMonth()]}`; };
+  const rangoTxt = (a, b) => { const A = S.parseFecha(a), B = S.parseFecha(b); return EN ? `${MESES_LARGOS[A.getUTCMonth()]} ${A.getUTCDate()} and ${MESES_LARGOS[B.getUTCMonth()]} ${B.getUTCDate()}` : `${A.getUTCDate()} de ${MESES_LARGOS[A.getUTCMonth()]} y el ${B.getUTCDate()} de ${MESES_LARGOS[B.getUTCMonth()]}`; };
   function porQue(x, ctx) {
     const motivos = [];
     if (x.anios) motivos.push(`🔥 <b>Historia:</b> hubo incendios aquí en <b>${x.anios} de ${ctx.N} años</b> (${ctx.aniosHist[0]}–${ctx.aniosHist[ctx.aniosHist.length - 1]}) entre el ${rangoTxt(ctx.fecha, ctx.finVentana)}.`);
@@ -1906,7 +1913,7 @@
     leyendaRiesgo = L.control({ position: "bottomright" });
     leyendaRiesgo.onAdd = () => {
       const d = L.DomUtil.create("div", "leyenda-vivo");
-      d.innerHTML = `<b>⚠️ Riesgo de incendio</b><br>${fechaLarga(ctx.fecha).replace(/ de \d{4}$/, "")} – ${fechaLarga(ctx.finVentana)}<br>` +
+      d.innerHTML = `<b>⚠️ Riesgo de incendio</b><br>${fechaLarga(ctx.fecha).replace(/(?: de|,) \d{4}$/, "")} – ${fechaLarga(ctx.finVentana)}<br>` +
         NIVELES.map((n) => `<i style="background:${n.color};border-radius:2px"></i>${n.nombre}`).join("<br>") + '<br><span style="opacity:.8">Clic en un cuadro: por qué</span>';
       return d;
     };

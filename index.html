@@ -22,6 +22,9 @@
       <a href="#explorar">Explorar</a>
       <a href="#" data-ir="metodo">Método</a>
       <a href="#equipo">Equipo</a>
+      <span class="idioma no-traducir" role="group" aria-label="Language / Idioma">
+        <button type="button" data-lang="en" onclick="FC_CAMBIAR_IDIOMA('en')">EN</button><button type="button" data-lang="es" onclick="FC_CAMBIAR_IDIOMA('es')">ES</button>
+      </span>
     </nav>
   </header>
 
@@ -38,7 +41,7 @@
   </div>
 
   <section class="guia" id="guia">
-    <div class="guia-paso"><span>1</span><div><b>Elige Huánuco o la Amazonía</b><br>con los botones del panel 1</div></div>
+    <div class="guia-paso"><span>1</span><div><b>Elige Huánuco o la Amazonía</b><br>con la lista del panel 1</div></div>
     <div class="guia-paso"><span>2</span><div><b>¿Cuándo se quema más?</b><br>mira el calendario y el cuadro mensual</div></div>
     <div class="guia-paso"><span>3</span><div><b>¿Dónde fueron los incendios?</b><br>elige año, mes o día en el panel 3</div></div>
     <div class="guia-paso"><span>4</span><div><b>¿Cómo lo hicimos?</b><br>pestaña 🛰️ Satélites</div></div>
@@ -332,6 +335,8 @@
   <!-- Librerías -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  <script src="js/idioma-en.js"></script>
+  <script src="js/idioma.js"></script>
   <!-- Datos reales (los crea scripts/descargar_datos.py; si no existe, se usan datos de ejemplo) -->
   <!-- Configuración local opcional (no se sube a GitHub): window.FIRECAL_CONFIG = { mapKey: "..." } -->
   <script src="js/config.js"></script>
